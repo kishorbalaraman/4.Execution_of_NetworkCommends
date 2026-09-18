@@ -26,30 +26,100 @@ This commands includes
 • Other IP Commands e.g. show ip route etc.
 <BR>
 
-## Output:
-### Systeminfo:
-<img width="770" height="937" alt="Screenshot 2026-09-02 100602" src="https://github.com/user-attachments/assets/1bb26403-8272-48a3-a664-8ce1fe5bee02" />
-<h2> ifconfig:</h2>
-<img width="1002" height="851" alt="Screenshot 2026-09-02 100351" src="https://github.com/user-attachments/assets/2bfc649b-2825-40f5-b950-1d694de9fb19" />
-<h2>ping :</h2>
-<img width="595" height="415" alt="Screenshot 2026-09-02 100934" src="https://github.com/user-attachments/assets/d9691606-273a-4b56-aed3-1cc065386d6c" />
-<h2>tracert :</h2>
-<img width="638" height="387" alt="Screenshot 2026-09-02 100637" src="https://github.com/user-attachments/assets/44c6843d-7c70-4fce-a59b-dda887938d62" />
-<h2>hostname :</h2>
-<img width="360" height="35" alt="Screenshot 2026-09-02 100917" src="https://github.com/user-attachments/assets/d4e41a94-7336-488f-b015-b04a424a3fe3" />
-<h2> getmac :</h2>
-<img width="566" height="100" alt="Screenshot 2026-09-02 100927" src="https://github.com/user-attachments/assets/b3325151-d3ef-4470-8aad-50e30bdd4f7c" />
-<h2> nslookup :</h2>
-<img width="422" height="212" alt="Screenshot 2026-09-02 100656" src="https://github.com/user-attachments/assets/46b4eb67-dc81-420a-b23d-82623b9c9f0f" />
-<h2>netstat :</h2>
-<img width="581" height="622" alt="image" src="https://github.com/user-attachments/assets/1d1e2ba5-5cb8-44de-8845-dee7a59e8cae" />
+## PROGRAM 
+
+server
+
+```python
 
 
+server.py
+import socket
+import subprocess
+import platform
+
+s = socket.socket()
+s.bind(('localhost', 8000))
+s.listen(1)
+print("Server listening on port 8000...")
+c, addr = s.accept()
+print("Connected:", addr)
+
+while True:
+    command = c.recv(1024).decode().strip()
+    if not command or command.lower() == 'exit':
+        print("Client disconnected.")
+        break
+
+    try:
+        # Run ANY command the client sends
+        completed = subprocess.run(
+            command, 
+            capture_output=True, 
+            text=True, 
+            shell=True
+        )
+        output = completed.stdout + (completed.stderr or "")
+    except Exception as e:
+        output = f"Command failed: {e}"
+
+    c.sendall(output.encode('utf-8'))
+
+c.close()
+s.close()
+
+```
+
+client
+
+```python
+import socket
+
+s = socket.socket()
+s.connect(('localhost', 8000))
+
+print("Connected. Type any network command (ipconfig, ping, etc.) or 'exit'.")
+
+while True:
+    cmd = input("Enter command: ").strip()
+    if not cmd:
+        continue
+
+    s.send(cmd.encode('utf-8'))
+    
+    if cmd.lower() == "exit":
+        print("Exiting...")
+        break
+
+    output = s.recv(65536).decode()
+    print("\n----- RESULT -----")
+    print(output)
+    print("------------------\n")
+
+s.close()
+
+```
+## Output
+
+server
+
+<img width="1105" height="846" alt="cn ex 4-1" src="https://github.com/user-attachments/assets/dfb45bbe-fddd-46e2-b746-6732e29b87fb" />
 
 
+client
+
+IPCONFIG
+
+<img width="1098" height="882" alt="cn ex 4-2" src="https://github.com/user-attachments/assets/d4157317-6f66-4981-852a-0d82f71b4b75" />
+
+PING
+
+<img width="1045" height="902" alt="cn ex 4-3" src="https://github.com/user-attachments/assets/34d5c248-a265-47c0-ba5a-4a1216f636c6" />
 
 
+TRACERT
 
+<img width="1102" height="847" alt="cn ex 4-4" src="https://github.com/user-attachments/assets/c57a641f-3789-44bf-a29d-84b475b80843" />
 
 
 ## Result
